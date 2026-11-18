@@ -6,6 +6,7 @@ from . import (
     nano_banana_vertex_v2,
     gemini_tts_vertex,
     veo_vertex,
+    omni_vertex,
     gemini_diarisation_vertex,
 )
 
@@ -20,6 +21,7 @@ modules = [
     nano_banana_vertex_v2,
     gemini_tts_vertex,
     veo_vertex,
+    omni_vertex,
     gemini_diarisation_vertex,
 ]
 

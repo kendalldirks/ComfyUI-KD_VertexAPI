@@ -9,6 +9,7 @@ All nodes run their API calls off the ComfyUI event loop, so a generation in fli
 *   **Gemini Chat (Vertex AI):** Google's powerful multimodal AI via Vertex AI. Ask questions about an image, generate detailed descriptions, or create prompts for other models. Supports thinking budget controls.
 *   **Nano Banana (Vertex AI):** Image generation and editing with the Gemini image models. The node adapts to the selected model: dropdowns list only what it supports, unused settings are greyed out, and image inputs grow as you connect them.
 *   **Veo Text-to-Video (Vertex AI):** Generate high-quality video clips from text prompts using Google's Veo model via Vertex AI.
+*   **Gemini Omni (Vertex AI):** Generate video with audio using Google's Gemini Omni models, from a prompt, first and last frames, or reference images.
 *   **Gemini TTS (Vertex AI):** Create speech from text using Google's Gemini models via Vertex AI.
 *   **Gemini Diarisation (Vertex AI):** Perform speaker diarization on audio files using Gemini on Vertex AI.
 
@@ -121,6 +122,30 @@ Generate video clips using Veo on Vertex AI.
     *   `reference_1` to `reference_3` (Optional): Asset references (a person, character or product) to keep consistent. Not on Lite; `veo-3.1-generate-001` needs 8 seconds with references.
 *   **Output:**
     *   `frames`, `audio`: Lists with one item per generated video.
+
+### Gemini Omni (Vertex AI)
+
+Generate one video, always with audio, using Gemini Omni on Vertex AI. Omni uses Google's Interactions API from the `global` location. There is no seed, negative prompt or audio setting in that API, so the node has none.
+
+Omni accepts most bad values at submit and only fails them later, so the node refuses settings a model does not support before anything is sent.
+
+*   **Category:** `video/generation`
+*   **Inputs:**
+    *   `prompt`: Video description. It can be empty only with a first frame.
+    *   `credentials`: Key file (see Credentials). Optional `project_id` / `service_account` sockets override it.
+    *   `model`: `gemini-omni-1.1-flash-preview` (default), `gemini-omni-flash-preview`.
+    *   `resolution`: `360p` / `720p` / `1080p` / `4k` on `gemini-omni-1.1-flash-preview`; `720p` only on `gemini-omni-flash-preview`.
+    *   `aspect_ratio`: `16:9` or `9:16`.
+    *   `duration_seconds`: 3 to 10.
+    *   `first_frame`, `last_frame` (Optional): `gemini-omni-1.1-flash-preview` only. A last frame needs a first frame. The API does not label the images, so say what each is for in the prompt, for example "Use the image as the first frame."
+    *   `references` (Optional): Up to 10 reference images. A new `reference_N` slot appears each time one is connected, and every frame of a batch counts. Cannot be combined with first or last frames. End the prompt with an instruction such as "Use the image(s) as references to generate the video." Google's guide does not say whether `gemini-omni-flash-preview` takes references, so the API may refuse them on that model.
+*   Input images are sent as PNG, at most 20 MB each.
+*   With no seed, queueing unchanged settings reuses ComfyUI's cached result instead of paying for a new video. Change an input to generate again.
+*   Cancelling the queue stops the node waiting, but the job keeps running at Google and is still charged.
+*   Frames are decoded to 32-bit float, so 10 seconds of 4k at 24 fps needs about 24 GB of RAM.
+*   **Output:**
+    *   `frames`: The video frames, as one image batch.
+    *   `audio`: The video's audio track.
 
 ### Gemini TTS (Vertex AI)
 
